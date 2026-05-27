@@ -1,0 +1,59 @@
+/* ═══════════════════════════════════════
+   BASE — variáveis, reset, tipografia, animações
+   ═══════════════════════════════════════ */
+
+:root {
+  --bg:        #090d14;
+  --surface:   #0f1724;
+  --surface2:  #182030;
+  --border:    #1e2d45;
+  --text:      #e8edf5;
+  --text-muted:#4a6080;
+  --text-sub:  #7a90b0;
+  --accent:    #4f8ef7;
+  --accent2:   #f06080;
+  --green:     #3de07a;
+  --yellow:    #f5c842;
+  --radius:    16px;
+  --radius-sm: 10px;
+  --bnav:      68px;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.35);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.45);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.55);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { font-family: 'Syne', sans-serif; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Animações ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .3; }
+}

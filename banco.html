@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#090d14"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Equipes Coo"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="ico_ep_coo.png"/>
+<title>Banco — Equipes Coo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/base.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+<link rel="stylesheet" href="css/auth.css"/>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>Banco<b>.</b></h1>
+  <div class="hdr-r">
+    <div class="sync-dot" id="syncDot"></div>
+    <button class="hdr-btn" onclick="forcarDownload()">↓ Baixar nuvem</button>
+  </div>
+</header>
+
+<div class="last-update" id="lastUpdate"></div>
+
+<!-- BANCO -->
+<div id="page-banco" class="page active">
+  <p class="stitle">Funcionários</p>
+  <div class="aform">
+    <input type="text" id="iFunc" placeholder="Nome do funcionário" onkeydown="if(event.key==='Enter')addFunc()"/>
+    <button class="abtn2" onclick="addFunc()">+</button>
+  </div>
+  <div class="ilist" id="lFunc"></div>
+
+  <p class="stitle">Atividades</p>
+  <div class="aform">
+    <input type="text" id="iAtiv" placeholder="Nome da atividade" onkeydown="if(event.key==='Enter')addAtiv()"/>
+    <button class="abtn2" onclick="addAtiv()">+</button>
+  </div>
+  <div class="ilist" id="lAtiv"></div>
+
+  <p class="stitle">Áreas</p>
+  <div class="aform">
+    <input type="text" id="iArea" placeholder="Nome da área" onkeydown="if(event.key==='Enter')addArea()"/>
+    <button class="abtn2" onclick="addArea()">+</button>
+  </div>
+  <div class="ilist" id="lArea"></div>
+</div>
+
+<!-- NAV -->
+<nav class="bnav">
+  <button class="nbtn" onclick="window.location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Programação<div class="dot"></div>
+  </button>
+  <button class="nbtn active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+    Banco<div class="dot"></div>
+  </button>
+</nav>
+
+<!-- MODAL: AUSÊNCIA -->
+<div class="modal-bg" id="modalAusencia" onclick="if(event.target===this)fecharModalAusencia()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Nova Ausência</h3>
+    <p id="ausModalFunc"></p>
+    <div class="frow">
+      <span class="flbl">Tipo</span>
+      <select class="fsel" id="ausTipo" onchange="ausOnTipo()">
+        <option value="ferias">🏖️ Férias</option>
+        <option value="viagem">✈️ Viagem</option>
+        <option value="folga">🌟 Folga</option>
+        <option value="atestado">🏥 Atestado</option>
+        <option value="falta">❌ Falta</option>
+        <option value="afastamento">🚑 Afastamento</option>
+      </select>
+    </div>
+    <div class="frow">
+      <span class="flbl">Data início</span>
+      <input type="date" class="finp" id="ausInicio"/>
+    </div>
+    <div class="frow" id="ausFimWrap">
+      <span class="flbl">Data fim (previsão de retorno)</span>
+      <input type="date" class="finp" id="ausFim"/>
+    </div>
+    <button class="mbtn primary" onclick="submitAusencia()">Salvar</button>
+  </div>
+</div>
+
+<!-- OVERLAY LOADING -->
+<div class="load-ov" id="loadOv"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-ov" id="authOv">
+  <div class="auth-box">
+    <div class="auth-logo">EC<b>.</b></div>
+    <h2>Equipes Coo</h2>
+    <p>Digite a senha para continuar</p>
+    <input class="auth-input" type="password" id="authInput" placeholder="••••••" onkeydown="if(event.key==='Enter')tentarLogin()"/>
+    <div class="auth-err" id="authErr">Senha incorreta</div>
+    <button class="auth-btn" onclick="tentarLogin()">Entrar</button>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/banco.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+
+verificarAuth();
+</script>
+</body>
+</html>

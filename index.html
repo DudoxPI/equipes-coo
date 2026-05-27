@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#090d14"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Equipes Coo"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="ico_ep_coo.png"/>
+<title>Equipes Coo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/base.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+<link rel="stylesheet" href="css/auth.css"/>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>APP Coordenador<b>.</b></h1>
+  <div class="hdr-r">
+    <div class="sync-dot" id="syncDot"></div>
+    <button class="hdr-btn" onclick="forcarDownload()">↓ Baixar nuvem</button>
+  </div>
+</header>
+
+<div class="last-update" id="lastUpdate"></div>
+
+<!-- PROGRAMAÇÃO -->
+<div id="page-prog" class="page active">
+  <div class="sem-nav">
+    <button class="arr" onclick="mudarSemana(-1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="sem-lbl" id="semLbl"></span>
+    <button class="arr" onclick="mudarSemana(1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+  <div class="pdf-row">
+    <button class="pdf-btn" onclick="exportarSemanaPDF()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+      PDF da semana
+    </button>
+  </div>
+  <div class="dtabs" id="dtabs"></div>
+  <div class="dacts">
+    <button class="abtn" onclick="copiarDiaAnterior()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copiar dia anterior
+    </button>
+    <button class="abtn" onclick="limparDia()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+      Limpar dia
+    </button>
+  </div>
+  <div id="dayContent"></div>
+  <button class="add-eq" onclick="abrirFormEquipe(-1)">+ Nova Equipe</button>
+</div>
+
+<!-- NAV -->
+<nav class="bnav">
+  <button class="nbtn active" onclick="navTo('prog', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Programação<div class="dot"></div>
+  </button>
+  <button class="nbtn" onclick="window.location.href='banco.html'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+    Banco<div class="dot"></div>
+  </button>
+</nav>
+
+<!-- MODAL: FORM EQUIPE -->
+<div class="modal-bg" id="modalForm" onclick="if(event.target===this)fecharForm()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="formTitle">Nova Equipe</h3>
+    <p>Preencha os dados da equipe</p>
+    <div class="frow">
+      <span class="flbl">Líder</span>
+      <select class="fsel" id="fLider"><option value="">Selecionar líder...</option></select>
+    </div>
+    <div class="frow">
+      <span class="flbl">Membros</span>
+      <div class="twrap" id="fMembrosWrap" onclick="abrirSeletor('membros')"></div>
+    </div>
+    <div class="frow">
+      <span class="flbl">Área</span>
+      <select class="fsel" id="fArea"><option value="">Selecionar área...</option></select>
+    </div>
+    <div class="frow">
+      <span class="flbl">Atividades</span>
+      <div class="twrap" id="fAtivWrap" onclick="abrirSeletor('atividades')"></div>
+    </div>
+    <div class="frow">
+      <span class="flbl">Observação</span>
+      <textarea class="finp" id="fObs" rows="2" placeholder="Observações opcionais..."></textarea>
+    </div>
+    <button class="mbtn primary" onclick="salvarForm()">Confirmar</button>
+  </div>
+</div>
+
+<!-- MODAL: SELETOR -->
+<div class="modal-bg" id="modalSel" onclick="if(event.target===this)fecharSel()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="selTitle"></h3>
+    <p id="selDesc"></p>
+    <div class="ml" id="selList"></div>
+    <button class="mbtn primary" onclick="confirmarSel()">Confirmar</button>
+  </div>
+</div>
+
+<!-- FAB ROW -->
+<div class="fab-row" id="fabRow">
+  <button class="fab" onclick="openListaModal('coordenacao')">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+    Coordenação
+  </button>
+  <button class="fab" onclick="openListaModal('equipes')">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 20c0-3.3-2.7-6-6-6"/></svg>
+    Equipes
+  </button>
+</div>
+
+<!-- MODAL: LISTA EXPORT -->
+<div class="modal-bg" id="modalLista" onclick="if(event.target===this)closeListaModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="modalListaTitulo">Lista do dia</h3>
+    <p>Copie e cole no WhatsApp</p>
+    <div class="modal-copy-area" id="listaTexto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeListaModal()">Fechar</button>
+      <button class="btn btn-primary" onclick="copiarLista()">📋 Copiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY LOADING -->
+<div class="load-ov" id="loadOv"><div class="spinner"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- AUTH OVERLAY -->
+<div class="auth-ov" id="authOv">
+  <div class="auth-box">
+    <div class="auth-logo">EC<b>.</b></div>
+    <h2>Equipes Coo</h2>
+    <p>Digite a senha para continuar</p>
+    <input class="auth-input" type="password" id="authInput" placeholder="••••••" onkeydown="if(event.key==='Enter')tentarLogin()"/>
+    <div class="auth-err" id="authErr">Senha incorreta</div>
+    <button class="auth-btn" onclick="tentarLogin()">Entrar</button>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/programacao.js"></script>
+<script src="js/export.js"></script>
+<script>
+function navTo(pg, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + pg).classList.add('active');
+  btn.classList.add('active');
+  renderDia();
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+
+verificarAuth();
+</script>
+</body>
+</html>
