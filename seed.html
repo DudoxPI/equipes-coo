@@ -39,9 +39,10 @@
 <body>
 
 <h2>Popular dados de exemplo</h2>
-<p>Adiciona <strong>60 funcionários</strong>, <strong>30 atividades</strong> e <strong>20 áreas</strong> ao banco e salva na nuvem.</p>
+<p>Adiciona líderes, funcionários, atividades e áreas ao banco e salva na nuvem.</p>
 
 <div class="stats">
+  <div class="stat"><b>5</b><span>Líderes</span></div>
   <div class="stat"><b>60</b><span>Funcionários</span></div>
   <div class="stat"><b>30</b><span>Atividades</span></div>
   <div class="stat"><b>20</b><span>Áreas</span></div>
@@ -49,6 +50,7 @@
 
 <div class="warn">⚠️ Os dados atuais serão substituídos.</div>
 
+<button id="btnClear" onclick="limparTudo()" style="background:linear-gradient(135deg,#f06080,#c0304a)">🗑️ Limpar tudo</button>
 <button id="btnPop" onclick="popularDados()">Adicionar dados de exemplo</button>
 <div id="msg"></div>
 <a href="banco.html">← Voltar ao banco</a>
@@ -61,6 +63,14 @@
 <script src="js/config.js"></script>
 <script src="js/sync.js"></script>
 <script>
+const LIDERES = [
+  'David',
+  'Dudox',
+  'Carlos Eduardo Silva',
+  'Fernando Dias',
+  'Patrícia Borges'
+];
+
 const FUNCIONARIOS = [
   'Anderson Ferreira',   'Adriana Santos',      'Alexandre Pereira',
   'Ana Paula Lima',      'André Costa',         'Bruno Oliveira',
@@ -116,37 +126,53 @@ const AREAS = [
   'Limpeza e Conservação',      'Transporte'
 ];
 
+async function limparTudo() {
+  const btn = document.getElementById('btnClear');
+  const msg = document.getElementById('msg');
+  btn.disabled = true;
+  msg.textContent = 'Limpando…';
+
+  banco = { lideres: [], funcionarios: [], atividades: [], areas: [] };
+  prog  = { semanaInicio: '', dias: {}, atualizadoEm: null };
+  salvarLocal();
+
+  try {
+    await Promise.all([
+      salvarBin('banco.json', banco),
+      salvarBin('prog.json',  prog)
+    ]);
+    msg.textContent = '✓ Banco e programação limpos!';
+    btn.textContent = 'Limpo ✓';
+  } catch (e) {
+    msg.textContent = '⚠️ Limpo localmente. Sem conexão com a nuvem.';
+    btn.disabled = false;
+  }
+}
+
 async function popularDados() {
   const btn = document.getElementById('btnPop');
   const msg = document.getElementById('msg');
   btn.disabled = true;
   msg.textContent = 'Gerando dados…';
 
-  // Monta objetos com uid único (pequeno delay para IDs diferentes)
-  const funcionarios = [];
-  for (const nome of FUNCIONARIOS) {
+  const mkList = (arr, extra = {}) => arr.map(async nome => {
     await new Promise(r => setTimeout(r, 1));
-    funcionarios.push({ id: uid(), nome, ausencias: [] });
-  }
-  const atividades = [];
-  for (const nome of ATIVIDADES) {
-    await new Promise(r => setTimeout(r, 1));
-    atividades.push({ id: uid(), nome });
-  }
-  const areas = [];
-  for (const nome of AREAS) {
-    await new Promise(r => setTimeout(r, 1));
-    areas.push({ id: uid(), nome });
-  }
+    return { id: uid(), nome, ...extra };
+  });
 
-  banco = { funcionarios, atividades, areas };
+  const lideres     = await Promise.all(mkList(LIDERES,     { ausencias: [] }));
+  const funcionarios = await Promise.all(mkList(FUNCIONARIOS, { ausencias: [] }));
+  const atividades   = await Promise.all(mkList(ATIVIDADES));
+  const areas        = await Promise.all(mkList(AREAS));
+
+  banco = { lideres, funcionarios, atividades, areas };
   salvarLocal();
 
   msg.textContent = 'Enviando para a nuvem…';
   try {
     const ok = await salvarBin('banco.json', banco);
     if (ok) {
-      msg.textContent = `✓ ${funcionarios.length} funcionários, ${atividades.length} atividades e ${areas.length} áreas salvos!`;
+      msg.textContent = `✓ ${lideres.length} líderes, ${funcionarios.length} funcionários, ${atividades.length} atividades e ${areas.length} áreas salvos!`;
       btn.textContent = 'Concluído ✓';
     } else {
       msg.textContent = '⚠️ Salvo localmente, mas erro ao enviar para nuvem.';
