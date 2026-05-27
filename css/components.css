@@ -281,6 +281,7 @@
 .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 20px; }
 .modal h3 { font-size: 19px; margin-bottom: 4px; font-weight: 700; }
 .modal p  { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; }
+#ausModalFunc { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
 
 /* ── FORM FIELDS ── */
 .ml   { display: flex; flex-direction: column; gap: 6px; }
