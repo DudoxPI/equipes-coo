@@ -128,7 +128,7 @@ function exportarSemanaPDF() {
     }
 
     const cardsHtml = eqs.map((eq, idx) => {
-      const lider = nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
+      const lider = nomePorId(banco.lideres || [], eq.lider) || nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
       const area  = nomePorId(banco.areas, eq.area);
       const ativs = (eq.atividades || []).map(aid => nomePorId(banco.atividades, aid)).filter(Boolean);
       const membs = (eq.membros    || []).map(mid => nomePorId(banco.funcionarios, mid)).filter(Boolean);
