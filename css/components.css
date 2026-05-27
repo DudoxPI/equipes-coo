@@ -112,7 +112,7 @@
 .dtab .dn { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
 .dtab.active .dn { color: var(--accent); }
 .dtab .dd { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-top: 2px; }
-.dtab .dc { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+.dtab .dc { font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
 .dtab.active .dc { color: var(--accent); }
 .dtab .da { font-size: 11px; color: rgba(240,96,128,.5); margin-top: 1px; font-weight: 500; }
 
