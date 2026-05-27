@@ -424,7 +424,7 @@
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 6px; justify-content: flex-start;
 }
-.func-left .iname { flex-shrink: 0; }
+.func-left .iname { flex: none; }
 .irow-func .aus-lista { display: flex; flex-wrap: wrap; gap: 4px; }
 .irow-func .aus-add-btn { flex-shrink: 0; }
 .irow-func .idel { flex-shrink: 0; margin-left: auto; }
