@@ -418,8 +418,16 @@
 .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 
 /* ── AUSÊNCIAS (banco) ── */
-.irow-func { flex-direction: column; align-items: flex-start; gap: 6px; }
-.irow-func .irow-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+.irow-func { align-items: center; gap: 10px; }
+.func-left {
+  flex: 1; min-width: 0;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 6px; justify-content: flex-start;
+}
+.func-left .iname { flex-shrink: 0; }
+.irow-func .aus-lista { display: flex; flex-wrap: wrap; gap: 4px; }
+.irow-func .aus-add-btn { flex-shrink: 0; }
+.irow-func .idel { flex-shrink: 0; margin-left: auto; }
 .aus-lista { display: flex; flex-wrap: wrap; gap: 4px; }
 .aus-badge {
   font-size: .7rem; padding: 2px 9px; border-radius: 20px; font-weight: 600;

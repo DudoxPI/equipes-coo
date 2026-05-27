@@ -137,12 +137,12 @@ function renderBanco() {
           `<span class="aus-badge aus-${a.tipo === 'dayoff' ? 'folga' : a.tipo}" onclick="event.stopPropagation();delAusencia('${f.id}','${a.id}')" title="Clique para remover">${ausLabel(a)} ✕</span>`
         ).join('');
         return `<div class="irow irow-func">
-          <div class="irow-top">
+          <div class="func-left">
             <span class="iname">${f.nome}</span>
-            <button class="idel" onclick="delFunc('${f.id}')">✕</button>
+            ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
+            <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}')">+ Ausência</button>
           </div>
-          ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
-          <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}')">+ Ausência</button>
+          <button class="idel" onclick="delFunc('${f.id}')">✕</button>
         </div>`;
       }).join('');
 
