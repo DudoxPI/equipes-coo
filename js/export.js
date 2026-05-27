@@ -171,7 +171,8 @@ function exportarSemanaPDF() {
 <title>Programação ${semTitulo}</title>
 <style>
   @page { size: A4 landscape; margin: 6mm 8mm; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: 'Segoe UI', Arial, sans-serif; color: #000; background: #fff; }
 
   /* Cabeçalho da página */

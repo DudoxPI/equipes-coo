@@ -59,7 +59,8 @@ function renderSemana() {
     const a    = d === diaAtual ? 'active' : '';
     const n    = parseInt(d.split('-')[2]);
     const eq   = getEqs(d);
-    const aus  = banco.funcionarios.filter(f => isAusenteNoDia(f, d)).length;
+    const todosF = [...(banco.lideres || []), ...banco.funcionarios];
+    const aus    = todosF.filter(f => isAusenteNoDia(f, d)).length;
     const dc   = eq.length === 0 ? 'Sem prog.' : eq.length + ' prog.';
     const da   = aus > 0 ? `<div class="da">${aus} ausente${aus > 1 ? 's' : ''}</div>` : '';
     return `<div class="dtab ${a}" onclick="selDia('${d}')">
@@ -177,7 +178,8 @@ function toggleAusCard() {
 }
 
 function renderAusenciasCard() {
-  const ausentes = banco.funcionarios.filter(f => isAusenteNoDia(f, diaAtual));
+  const todosF   = [...(banco.lideres || []), ...banco.funcionarios];
+  const ausentes = todosF.filter(f => isAusenteNoDia(f, diaAtual));
   if (!ausentes.length) return '';
 
   // Agrupa por tipo mantendo ordem visual
