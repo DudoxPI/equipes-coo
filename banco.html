@@ -31,6 +31,13 @@
 
 <!-- BANCO -->
 <div id="page-banco" class="page active">
+  <p class="stitle">Líderes</p>
+  <div class="aform">
+    <input type="text" id="iLider" placeholder="Nome do líder" onkeydown="if(event.key==='Enter')addLider()"/>
+    <button class="abtn2" onclick="addLider()">+</button>
+  </div>
+  <div class="ilist" id="lLider"></div>
+
   <p class="stitle">Funcionários</p>
   <div class="aform">
     <input type="text" id="iFunc" placeholder="Nome do funcionário" onkeydown="if(event.key==='Enter')addFunc()"/>

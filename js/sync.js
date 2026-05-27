@@ -3,7 +3,7 @@
    ═══════════════════════════════════════ */
 
 // ── Estado global ──
-let banco = { funcionarios: [], atividades: [], areas: [] };
+let banco = { lideres: [], funcionarios: [], atividades: [], areas: [] };
 let prog  = { semanaInicio: '', dias: {}, atualizadoEm: null };
 
 // ── Helpers ──
@@ -139,7 +139,7 @@ async function carregarNuvem() {
   setLoad(true);
   try {
     const [b, p] = await Promise.all([lerBin('banco.json'), lerBin('prog.json')]);
-    banco = b || { funcionarios: [], atividades: [], areas: [] };
+    banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
     prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
     salvarLocal();
     syncDot('ok');

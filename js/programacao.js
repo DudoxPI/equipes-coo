@@ -236,18 +236,7 @@ function removerEquipe(i) {
   toast('Equipe removida');
 }
 
-// ── Copiar / Limpar ──
-function copiarDiaAnterior() {
-  const dias = getDias(semAtual);
-  const idx  = dias.indexOf(diaAtual);
-  if (idx <= 0) { toast('Sem dia anterior'); return; }
-  const ant = getEqs(dias[idx - 1]);
-  if (!ant.length) { toast('Dia anterior vazio'); return; }
-  prog.dias[diaAtual] = { equipes: JSON.parse(JSON.stringify(ant)).map(e => ({ ...e, id: uid() })) };
-  salvar();
-  renderSemana();
-  toast('✓ Copiado!');
-}
+// ── Limpar ──
 function limparDia() {
   prog.dias[diaAtual] = { equipes: [] };
   salvar();
@@ -338,7 +327,7 @@ function stepAnterior() {
 function renderChipsLider() {
   const usados = pessoasUsadas(formIdx);
   document.getElementById('fLiderChips').innerHTML =
-    alpha(banco.funcionarios).map(f => {
+    alpha(banco.lideres || []).map(f => {
       const ocupado   = usados.has(f.id);
       const ausente   = isAusenteNoDia(f, diaAtual);
       const bloqueado = ocupado || ausente;

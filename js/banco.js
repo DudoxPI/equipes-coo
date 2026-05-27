@@ -4,10 +4,28 @@
 
 // TIPO_LABEL e TIPO_EMOJI estão em sync.js (compartilhados com programacao.js)
 
-let ausFuncId = null; // ID do funcionário que está recebendo nova ausência
+let ausFuncId  = null;            // ID da pessoa que está recebendo nova ausência
+let ausSource  = 'funcionarios'; // array de origem: 'funcionarios' | 'lideres'
 
 // Afastamento = sem data fim prevista; falta = dia único (fim = inicio automático)
 const SEM_FIM = new Set(['afastamento']);
+
+// ── Líderes ──
+function addLider() {
+  const i = document.getElementById('iLider');
+  const n = i.value.trim();
+  if (!n) return;
+  if (!banco.lideres) banco.lideres = [];
+  banco.lideres.push({ id: uid(), nome: n, ausencias: [] });
+  i.value = '';
+  salvar();
+  renderBanco();
+}
+function delLider(id) {
+  banco.lideres = (banco.lideres || []).filter(l => l.id !== id);
+  salvar();
+  renderBanco();
+}
 
 // ── Funcionários ──
 function addFunc() {
@@ -58,9 +76,10 @@ function delArea(id) {
 }
 
 // ── Ausências ──
-function abrirModalAusencia(funcId) {
+function abrirModalAusencia(funcId, source = 'funcionarios') {
   ausFuncId = funcId;
-  const f = banco.funcionarios.find(x => x.id === funcId);
+  ausSource  = source;
+  const f = (banco[source] || []).find(x => x.id === funcId);
   document.getElementById('ausModalFunc').textContent = f ? f.nome : '';
   document.getElementById('ausTipo').value   = 'ferias';
   document.getElementById('ausInicio').value = '';
@@ -91,7 +110,7 @@ function submitAusencia() {
     if (!fim)         { toast('Informe a data fim'); return; }
     if (fim < inicio) { toast('Data fim deve ser após o início'); return; }
   }
-  const f = banco.funcionarios.find(x => x.id === ausFuncId);
+  const f = (banco[ausSource] || []).find(x => x.id === ausFuncId);
   if (!f) return;
   if (!f.ausencias) f.ausencias = [];
   f.ausencias.push({ id: uid(), tipo, inicio, fim });
@@ -100,8 +119,8 @@ function submitAusencia() {
   renderBanco();
   toast('✓ Ausência registrada!');
 }
-function delAusencia(funcId, ausId) {
-  const f = banco.funcionarios.find(x => x.id === funcId);
+function delAusencia(funcId, ausId, source = 'funcionarios') {
+  const f = (banco[source] || []).find(x => x.id === funcId);
   if (!f) return;
   f.ausencias = (f.ausencias || []).filter(a => a.id !== ausId);
   salvar();
@@ -122,29 +141,40 @@ function renderBanco() {
     return `${lbl} ${fmtBR(a.inicio)} – ${fmtBR(a.fim)}`;
   }
 
-  // Funcionários com ausência registrada aparecem primeiro
-  const funcOrdenados = [
-    ...alpha(banco.funcionarios).filter(f => (f.ausencias || []).length > 0),
-    ...alpha(banco.funcionarios).filter(f => !(f.ausencias || []).length),
-  ];
+  // helper: renderiza lista de pessoas com ausências (funcionários e líderes)
+  function renderPessoas(lista, delFn, source) {
+    const ordenados = [
+      ...alpha(lista).filter(f => (f.ausencias || []).length > 0),
+      ...alpha(lista).filter(f => !(f.ausencias || []).length),
+    ];
+    return ordenados.map(f => {
+      const aus = f.ausencias || [];
+      const ausBadges = aus.map(a =>
+        `<span class="aus-badge aus-${a.tipo === 'dayoff' ? 'folga' : a.tipo}" onclick="event.stopPropagation();delAusencia('${f.id}','${a.id}','${source}')" title="Clique para remover">${ausLabel(a)} ✕</span>`
+      ).join('');
+      return `<div class="irow irow-func">
+        <div class="func-left">
+          <span class="iname">${f.nome}</span>
+          ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
+          <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}','${source}')">+ Ausência</button>
+        </div>
+        <button class="idel" onclick="${delFn}('${f.id}')">✕</button>
+      </div>`;
+    }).join('');
+  }
 
+  // Líderes
+  const ll = document.getElementById('lLider');
+  const lideres = banco.lideres || [];
+  if (ll) ll.innerHTML = !lideres.length
+    ? `<div class="empty">${svgUser}Nenhum líder</div>`
+    : renderPessoas(lideres, 'delLider', 'lideres');
+
+  // Funcionários
   const lf = document.getElementById('lFunc');
   if (lf) lf.innerHTML = !banco.funcionarios.length
     ? `<div class="empty">${svgUser}Nenhum funcionário</div>`
-    : funcOrdenados.map(f => {
-        const aus = f.ausencias || [];
-        const ausBadges = aus.map(a =>
-          `<span class="aus-badge aus-${a.tipo === 'dayoff' ? 'folga' : a.tipo}" onclick="event.stopPropagation();delAusencia('${f.id}','${a.id}')" title="Clique para remover">${ausLabel(a)} ✕</span>`
-        ).join('');
-        return `<div class="irow irow-func">
-          <div class="func-left">
-            <span class="iname">${f.nome}</span>
-            ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
-            <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}')">+ Ausência</button>
-          </div>
-          <button class="idel" onclick="delFunc('${f.id}')">✕</button>
-        </div>`;
-      }).join('');
+    : renderPessoas(banco.funcionarios, 'delFunc', 'funcionarios');
 
   const la = document.getElementById('lAtiv');
   if (la) la.innerHTML = !banco.atividades.length
