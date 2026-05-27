@@ -279,10 +279,8 @@ function abrirFormEquipe(idx) {
   let eq;
   if (idx === -1) {
     eq = { id: uid(), lider: '', membros: [], area: '', atividades: [], obs: '' };
-    document.getElementById('formTitle').textContent = 'Nova Equipe';
   } else {
     eq = eqs[idx];
-    document.getElementById('formTitle').textContent = 'Editar Equipe ' + (idx + 1);
   }
   formLider      = eq.lider      || '';
   formArea       = eq.area       || '';
