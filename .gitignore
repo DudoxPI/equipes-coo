@@ -1,6 +1,10 @@
 # PDFs gerados pelo app
 *.pdf
 
+# Dados do Gist (editar localmente e copiar para o Gist)
+banco.json
+prog.json
+
 # Sistema
 .DS_Store
 Thumbs.db
