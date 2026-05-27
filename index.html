@@ -73,44 +73,34 @@
   </button>
 </nav>
 
-<!-- MODAL: FORM EQUIPE -->
+<!-- MODAL: FORM EQUIPE (stepper) -->
 <div class="modal-bg" id="modalForm" onclick="if(event.target===this)fecharForm()">
-  <div class="modal">
+  <div class="modal modal-step">
     <div class="modal-handle"></div>
+    <div class="step-progress" id="stepProgress"></div>
     <h3 id="formTitle">Nova Equipe</h3>
-    <p>Preencha os dados da equipe</p>
-    <div class="frow">
-      <span class="flbl">Líder</span>
-      <select class="fsel" id="fLider"><option value="">Selecionar líder...</option></select>
+    <p class="step-lbl" id="stepLbl"></p>
+    <div class="step-content">
+      <div class="step-pane" id="step0">
+        <div class="fchips" id="fLiderChips"></div>
+      </div>
+      <div class="step-pane hidden" id="step1">
+        <div class="fchips" id="fAreaChips"></div>
+      </div>
+      <div class="step-pane hidden" id="step2">
+        <div class="fchips" id="fAtivChips"></div>
+      </div>
+      <div class="step-pane hidden" id="step3">
+        <div class="fchips" id="fMembrosChips"></div>
+      </div>
+      <div class="step-pane hidden" id="step4">
+        <textarea class="finp" id="fObs" rows="3" placeholder="Observações opcionais..."></textarea>
+      </div>
     </div>
-    <div class="frow">
-      <span class="flbl">Membros</span>
-      <div class="twrap" id="fMembrosWrap" onclick="abrirSeletor('membros')"></div>
+    <div class="step-footer">
+      <button class="mbtn ghost" id="btnVoltar" onclick="stepAnterior()">← Voltar</button>
+      <button class="mbtn primary" id="btnProximo" onclick="stepProximo()">Próximo →</button>
     </div>
-    <div class="frow">
-      <span class="flbl">Área</span>
-      <select class="fsel" id="fArea"><option value="">Selecionar área...</option></select>
-    </div>
-    <div class="frow">
-      <span class="flbl">Atividades</span>
-      <div class="twrap" id="fAtivWrap" onclick="abrirSeletor('atividades')"></div>
-    </div>
-    <div class="frow">
-      <span class="flbl">Observação</span>
-      <textarea class="finp" id="fObs" rows="2" placeholder="Observações opcionais..."></textarea>
-    </div>
-    <button class="mbtn primary" onclick="salvarForm()">Confirmar</button>
-  </div>
-</div>
-
-<!-- MODAL: SELETOR -->
-<div class="modal-bg" id="modalSel" onclick="if(event.target===this)fecharSel()">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <h3 id="selTitle"></h3>
-    <p id="selDesc"></p>
-    <div class="ml" id="selList"></div>
-    <button class="mbtn primary" onclick="confirmarSel()">Confirmar</button>
   </div>
 </div>
 

@@ -319,6 +319,43 @@
 .tag .x:hover { opacity: 1; }
 .tph     { color: var(--text-muted); font-size: 13px; align-self: center; }
 
+/* ── CHIPS INLINE DO FORM ── */
+.fchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip  {
+  font-size: 13px; padding: 6px 13px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-sub); cursor: pointer; transition: all .15s;
+  user-select: none; display: inline-flex; align-items: center; gap: 4px;
+}
+.fchip:hover  { border-color: var(--text-muted); color: var(--text); }
+.fchip:active { transform: scale(.95); }
+.fchip.sel-lider  { background: rgba(79,142,247,.18); border-color: var(--accent); color: var(--text); font-weight: 600; }
+.fchip.sel-area   { background: rgba(79,142,247,.18); border-color: var(--accent); color: var(--text); font-weight: 600; }
+.fchip.sel-ativ   { background: rgba(245,200,66,.12); border-color: var(--yellow); color: var(--yellow); font-weight: 600; }
+.fchip.sel-membro { background: rgba(79,142,247,.13); border-color: rgba(79,142,247,.5); color: var(--text); }
+.fchip.disabled   { opacity: .25; pointer-events: none; }
+.fchip-hint       { font-size: 10px; opacity: .65; }
+
+/* ── STEPPER ── */
+.modal-step { padding-bottom: 0 !important; display: flex; flex-direction: column; }
+
+.step-progress  { display: flex; gap: 7px; justify-content: center; margin-bottom: 14px; }
+.step-dot       { width: 7px; height: 7px; border-radius: 50%; background: var(--border); transition: all .25s; }
+.step-dot.done  { background: var(--accent); opacity: .35; }
+.step-dot.active{ background: var(--accent); transform: scale(1.35); }
+
+.step-lbl     { font-size: 10px; font-weight: 700; letter-spacing: 1px;
+                text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
+
+.step-content { flex: 1; overflow-y: auto; min-height: 100px; }
+.step-pane.hidden { display: none; }
+
+.step-footer  { flex-shrink: 0; display: flex; gap: 8px;
+                padding: 14px 0 28px; margin-top: 14px;
+                border-top: 1px solid var(--border); background: var(--surface); }
+.mbtn.ghost   { background: var(--surface2); color: var(--text); }
+.mbtn.ghost:hover { opacity: .85; }
+
 .mbtn { width: 100%; border: none; border-radius: var(--radius-sm); padding: 15px; color: #fff; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 14px; transition: opacity .15s, transform .15s; letter-spacing: .3px; }
 .mbtn:hover   { opacity: .88; }
 .mbtn:active  { transform: scale(.97); }

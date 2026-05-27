@@ -7,10 +7,19 @@ let diaAtual     = null;
 let formIdx      = -1;
 let ausCardOpen  = false;  // card de ausências começa recolhido
 let dispCardOpen = false;  // card de disponíveis começa recolhido
+let formLider      = '';
+let formArea       = '';
 let formMembros    = [];
 let formAtividades = [];
-let selCallback = null;
-let selItens    = [];
+let formStep       = 0;
+
+const FORM_STEPS = [
+  { lbl: 'Líder',      render: () => renderChipsLider()   },
+  { lbl: 'Área',       render: () => renderChipsArea()    },
+  { lbl: 'Atividades', render: () => renderChipsAtiv()    },
+  { lbl: 'Membros',    render: () => renderChipsMembros() },
+  { lbl: 'Observação', render: () => {}                   },
+];
 
 // ── Semana / Dia ──
 function initSemana() {
@@ -263,7 +272,7 @@ function pessoasUsadas(excIdx) {
   return s;
 }
 
-// ── Form equipe ──
+// ── Form equipe — chips inline ──
 function abrirFormEquipe(idx) {
   formIdx = idx;
   const eqs = getEqs(diaAtual);
@@ -275,124 +284,149 @@ function abrirFormEquipe(idx) {
     eq = eqs[idx];
     document.getElementById('formTitle').textContent = 'Editar Equipe ' + (idx + 1);
   }
-
-  const usados = pessoasUsadas(idx);
-  const sel = document.getElementById('fLider');
-  sel.innerHTML = '<option value="">Selecionar líder...</option>' +
-    alpha(banco.funcionarios).map(f => {
-      const dis     = usados.has(f.id) ? 'disabled' : '';
-      const s       = eq.lider === f.id ? 'selected' : '';
-      const ausente = isAusenteNoDia(f, diaAtual);
-      let lbl = f.nome;
-      if (usados.has(f.id))       lbl += ' (ocupado)';
-      else if (ausente)            lbl += ' (ausente)';
-      return `<option value="${f.id}" ${s} ${dis}>${lbl}</option>`;
-    }).join('');
-
-  const asel = document.getElementById('fArea');
-  asel.innerHTML = '<option value="">Selecionar área...</option>' +
-    alpha(banco.areas).map(a => `<option value="${a.id}" ${eq.area === a.id ? 'selected' : ''}>${a.nome}</option>`).join('');
-
+  formLider      = eq.lider      || '';
+  formArea       = eq.area       || '';
   formMembros    = [...(eq.membros    || [])];
   formAtividades = [...(eq.atividades || [])];
-  renderFormMembros();
-  renderFormAtiv();
   document.getElementById('fObs').value = eq.obs || '';
+  formStep = 0;
+  renderStep();
   document.getElementById('modalForm').classList.add('open');
 }
 
-function renderFormMembros() {
-  const w = document.getElementById('fMembrosWrap');
-  if (!formMembros.length) { w.innerHTML = '<span class="tph">Toque para selecionar</span>'; return; }
-  w.innerHTML = formMembros.map(mid => {
-    const n = nomePorId(banco.funcionarios, mid);
-    return `<span class="tag mb">${n}<span class="x" onclick="event.stopPropagation();rmFormMembro('${mid}')">✕</span></span>`;
-  }).join('');
-}
-function rmFormMembro(mid) { formMembros = formMembros.filter(m => m !== mid); renderFormMembros(); }
+// ── Stepper ──
+function renderStep() {
+  // Dots de progresso
+  document.getElementById('stepProgress').innerHTML =
+    FORM_STEPS.map((_, i) => {
+      const cls = i < formStep ? 'done' : i === formStep ? 'active' : '';
+      return `<div class="step-dot ${cls}"></div>`;
+    }).join('');
 
-function renderFormAtiv() {
-  const w = document.getElementById('fAtivWrap');
-  if (!formAtividades.length) { w.innerHTML = '<span class="tph">Toque para selecionar</span>'; return; }
-  w.innerHTML = formAtividades.map(aid => {
-    const n = nomePorId(banco.atividades, aid);
-    return `<span class="tag at">${n}<span class="x" onclick="event.stopPropagation();rmFormAtiv('${aid}')">✕</span></span>`;
-  }).join('');
+  // Rótulo da etapa
+  document.getElementById('stepLbl').textContent = FORM_STEPS[formStep].lbl;
+
+  // Mostra apenas o pane ativo
+  document.querySelectorAll('.step-pane').forEach((p, i) =>
+    p.classList.toggle('hidden', i !== formStep)
+  );
+
+  // Renderiza conteúdo da etapa
+  FORM_STEPS[formStep].render();
+
+  // Voltar: oculto no passo 0
+  document.getElementById('btnVoltar').style.display = formStep === 0 ? 'none' : '';
+
+  // Próximo vira Salvar no último passo
+  const btnP = document.getElementById('btnProximo');
+  if (formStep === FORM_STEPS.length - 1) {
+    btnP.textContent = '✓ Salvar';
+    btnP.onclick = salvarForm;
+  } else {
+    btnP.textContent = 'Próximo →';
+    btnP.onclick = stepProximo;
+  }
 }
-function rmFormAtiv(aid) { formAtividades = formAtividades.filter(a => a !== aid); renderFormAtiv(); }
+
+function stepProximo() {
+  if (formStep === 0 && !formLider) { toast('Selecione um líder'); return; }
+  if (formStep < FORM_STEPS.length - 1) { formStep++; renderStep(); }
+}
+function stepAnterior() {
+  if (formStep > 0) { formStep--; renderStep(); }
+}
+
+// ── Render chips ──
+function renderChipsLider() {
+  const usados = pessoasUsadas(formIdx);
+  document.getElementById('fLiderChips').innerHTML =
+    alpha(banco.funcionarios).map(f => {
+      const ocupado   = usados.has(f.id);
+      const ausente   = isAusenteNoDia(f, diaAtual);
+      const bloqueado = ocupado || ausente;
+      const sel       = f.id === formLider;
+      const cls       = [sel ? 'sel-lider' : '', bloqueado && !sel ? 'disabled' : ''].filter(Boolean).join(' ');
+      const hint      = ocupado ? `<span class="fchip-hint">(alocado)</span>`
+                      : ausente ? `<span class="fchip-hint">(ausente)</span>` : '';
+      return `<span class="fchip ${cls}" onclick="toggleFormLider('${f.id}')">${f.nome}${hint}</span>`;
+    }).join('');
+}
+
+function renderChipsArea() {
+  if (!banco.areas.length) {
+    document.getElementById('fAreaChips').innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Nenhuma área cadastrada</span>';
+    return;
+  }
+  document.getElementById('fAreaChips').innerHTML =
+    alpha(banco.areas).map(a => {
+      const sel = a.id === formArea;
+      return `<span class="fchip ${sel ? 'sel-area' : ''}" onclick="toggleFormArea('${a.id}')">${a.nome}</span>`;
+    }).join('');
+}
+
+function renderChipsAtiv() {
+  if (!banco.atividades.length) {
+    document.getElementById('fAtivChips').innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Nenhuma atividade cadastrada</span>';
+    return;
+  }
+  document.getElementById('fAtivChips').innerHTML =
+    alpha(banco.atividades).map(a => {
+      const sel = formAtividades.includes(a.id);
+      return `<span class="fchip ${sel ? 'sel-ativ' : ''}" onclick="toggleFormAtiv('${a.id}')">${a.nome}</span>`;
+    }).join('');
+}
+
+function renderChipsMembros() {
+  const usados = pessoasUsadas(formIdx);
+  const lista  = alpha(banco.funcionarios).filter(f => f.id !== formLider);
+  if (!lista.length) {
+    document.getElementById('fMembrosChips').innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Nenhum funcionário disponível</span>';
+    return;
+  }
+  document.getElementById('fMembrosChips').innerHTML =
+    lista.map(f => {
+      const ocupado   = usados.has(f.id);
+      const ausente   = isAusenteNoDia(f, diaAtual);
+      const bloqueado = ocupado || ausente;
+      const sel       = formMembros.includes(f.id);
+      const cls       = [sel ? 'sel-membro' : '', bloqueado && !sel ? 'disabled' : ''].filter(Boolean).join(' ');
+      const hint      = ocupado ? `<span class="fchip-hint">(alocado)</span>`
+                      : ausente ? `<span class="fchip-hint">(ausente)</span>` : '';
+      return `<span class="fchip ${cls}" onclick="toggleFormMembro('${f.id}')">${f.nome}${hint}</span>`;
+    }).join('');
+}
+
+// ── Toggles ──
+function toggleFormLider(id) {
+  formLider   = (formLider === id) ? '' : id;
+  formMembros = formMembros.filter(m => m !== id);
+  renderChipsLider();
+  renderChipsMembros();
+}
+function toggleFormArea(id)   { formArea = (formArea === id) ? '' : id; renderChipsArea(); }
+function toggleFormAtiv(id)   { _toggleArr(formAtividades, id); renderChipsAtiv(); }
+function toggleFormMembro(id) { _toggleArr(formMembros, id); renderChipsMembros(); }
+function _toggleArr(arr, id)  { const i = arr.indexOf(id); i === -1 ? arr.push(id) : arr.splice(i, 1); }
 
 function salvarForm() {
-  const lider = document.getElementById('fLider').value;
-  const area  = document.getElementById('fArea').value;
-  const obs   = document.getElementById('fObs').value.trim();
-  if (!lider) { toast('Selecione um líder'); return; }
-
-  const eq = {
-    id: uid(), lider,
-    membros:    [...formMembros].filter(m => m !== lider),
-    area,
+  if (!formLider) { toast('Selecione um líder'); return; }
+  const obs = document.getElementById('fObs').value.trim();
+  const eq  = {
+    id: uid(), lider: formLider,
+    membros:    [...formMembros].filter(m => m !== formLider),
+    area:       formArea,
     atividades: [...formAtividades],
     obs
   };
   const eqs = getEqs(diaAtual);
   if (formIdx === -1) eqs.push(eq);
   else { eq.id = eqs[formIdx].id; eqs[formIdx] = eq; }
-
   fecharForm();
   salvar();
   renderSemana();
   toast(formIdx === -1 ? '✓ Equipe adicionada!' : '✓ Equipe atualizada!');
 }
 function fecharForm() { document.getElementById('modalForm').classList.remove('open'); }
-
-// ── Seletor ──
-function abrirSeletor(tipo) {
-  if (tipo === 'membros') {
-    const liderAtual  = document.getElementById('fLider').value;
-    const usados      = pessoasUsadas(formIdx);
-    const selecionados = new Set(formMembros);
-    document.getElementById('selTitle').textContent = 'Selecionar Membros';
-    document.getElementById('selDesc').textContent  = 'Já alocados em outra equipe ficam desabilitados.';
-    document.getElementById('selList').innerHTML = alpha(banco.funcionarios).map(f => {
-      if (f.id === liderAtual) return '';
-      const ocupado = usados.has(f.id) && !selecionados.has(f.id);
-      const sel     = selecionados.has(f.id);
-      const ausente = isAusenteNoDia(f, diaAtual) && !selecionados.has(f.id);
-      const cls     = sel ? 'selected' : ocupado ? 'disabled' : '';
-      const hint    = ocupado ? '<span class="mi-hint">alocado</span>' :
-                      ausente ? '<span class="mi-hint">ausente</span>' : '';
-      return `<div class="mi ${cls}" data-id="${f.id}" onclick="toggleSel(this)">
-        <div class="mchk">${sel ? '✓' : ''}</div>
-        <span>${f.nome}</span>${hint}
-      </div>`;
-    }).join('');
-    selItens = [...selecionados];
-    selCallback = ids => { formMembros = ids; renderFormMembros(); };
-  } else {
-    const selecionados = new Set(formAtividades);
-    document.getElementById('selTitle').textContent = 'Selecionar Atividades';
-    document.getElementById('selDesc').textContent  = 'Escolha uma ou mais atividades.';
-    document.getElementById('selList').innerHTML = alpha(banco.atividades).map(a => {
-      const sel = selecionados.has(a.id);
-      return `<div class="mi ${sel ? 'selected' : ''}" data-id="${a.id}" onclick="toggleSel(this)">
-        <div class="mchk">${sel ? '✓' : ''}</div>
-        <span>${a.nome}</span>
-      </div>`;
-    }).join('');
-    selItens = [...selecionados];
-    selCallback = ids => { formAtividades = ids; renderFormAtiv(); };
-  }
-  document.getElementById('modalSel').classList.add('open');
-}
-function toggleSel(el) {
-  if (el.classList.contains('disabled')) return;
-  const id  = el.dataset.id;
-  const idx = selItens.indexOf(id);
-  if (idx === -1) { selItens.push(id); el.classList.add('selected'); el.querySelector('.mchk').textContent = '✓'; }
-  else            { selItens.splice(idx, 1); el.classList.remove('selected'); el.querySelector('.mchk').textContent = ''; }
-}
-function confirmarSel() { if (selCallback) selCallback([...selItens]); fecharSel(); }
-function fecharSel()    { document.getElementById('modalSel').classList.remove('open'); selCallback = null; selItens = []; }
 
 // ── Init + renderTudo ──
 function renderTudo() {
