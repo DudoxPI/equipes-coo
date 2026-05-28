@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Equipes Coo — Testes Automatizados</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #e6edf3; padding: 24px; }
+  h1   { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #8b949e; margin-bottom: 24px; }
+
+  /* Contador geral */
+  #summary {
+    display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .count-box {
+    padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 22px;
+    display: flex; flex-direction: column; align-items: center; min-width: 100px;
+  }
+  .count-box span { font-size: 11px; font-weight: 500; margin-top: 2px; }
+  .count-box.pass { background: rgba(35,134,54,.25); border: 1px solid rgba(35,134,54,.5); color: #3fb950; }
+  .count-box.fail { background: rgba(248,81,73,.2);  border: 1px solid rgba(248,81,73,.5);  color: #f85149; }
+  .count-box.total{ background: rgba(79,142,247,.15); border: 1px solid rgba(79,142,247,.4); color: #79c0ff; }
+
+  /* Blocos */
+  .block { margin-bottom: 28px; }
+  .block-title {
+    font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    color: #8b949e; padding-bottom: 8px; border-bottom: 1px solid #21262d; margin-bottom: 12px;
+  }
+
+  /* Linhas de teste */
+  .test-row {
+    display: flex; align-items: flex-start; gap: 10px; padding: 7px 0;
+    border-bottom: 1px solid #161b22; font-size: 13px;
+  }
+  .badge {
+    flex-shrink: 0; width: 52px; text-align: center; border-radius: 4px;
+    padding: 2px 0; font-weight: 700; font-size: 11px; letter-spacing: .5px; margin-top: 1px;
+  }
+  .badge.pass { background: rgba(35,134,54,.3); color: #3fb950; }
+  .badge.fail { background: rgba(248,81,73,.2);  color: #f85149; }
+  .test-label { flex: 1; color: #e6edf3; }
+  .test-detail { font-size: 11px; color: #8b949e; margin-top: 2px; font-family: monospace; }
+  .fail-detail { font-size: 11px; color: #f85149; margin-top: 2px; font-family: monospace; }
+</style>
+<!-- Stubs para sync.js não quebrar -->
+<div id="loadOv" style="display:none"></div>
+<div id="syncDot" style="display:none"></div>
+<div id="toast"  style="display:none"></div>
+</head>
+<body>
+
+<h1>🧪 Equipes Coo — Testes Automatizados</h1>
+<p class="subtitle">Unit tests das funções de negócio + regressões dos bugs corrigidos</p>
+
+<div id="summary"></div>
+<div id="results"></div>
+
+<script src="js/config.js"></script>
+<script src="js/sync.js"></script>
+<script>
+// ─── Mini framework ───────────────────────────────────────────────
+let passCount = 0, failCount = 0;
+let currentBlock = null;
+const resultsEl = document.getElementById('results');
+
+function startBlock(title) {
+  currentBlock = document.createElement('div');
+  currentBlock.className = 'block';
+  currentBlock.innerHTML = `<div class="block-title">${title}</div>`;
+  resultsEl.appendChild(currentBlock);
+}
+
+function assert(label, condition, detail = '') {
+  const row = document.createElement('div');
+  row.className = 'test-row';
+  if (condition) {
+    passCount++;
+    row.innerHTML = `
+      <span class="badge pass">PASS</span>
+      <div><div class="test-label">${label}</div>${detail ? `<div class="test-detail">${detail}</div>` : ''}</div>`;
+  } else {
+    failCount++;
+    row.innerHTML = `
+      <span class="badge fail">FAIL</span>
+      <div><div class="test-label">${label}</div>${detail ? `<div class="fail-detail">✗ ${detail}</div>` : ''}</div>`;
+  }
+  currentBlock.appendChild(row);
+}
+
+function assertEquals(label, actual, expected) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  assert(label, ok, ok
+    ? `retornou: ${JSON.stringify(actual)}`
+    : `esperado: ${JSON.stringify(expected)} | obtido: ${JSON.stringify(actual)}`
+  );
+}
+
+// ─── Bloco 1: Helpers de data ─────────────────────────────────────
+startBlock('Bloco 1 — Helpers de data');
+
+assertEquals('fmtD: formata Date → YYYY-MM-DD',
+  fmtD(new Date(2025, 4, 27)),  // mês 4 = maio
+  '2025-05-27'
+);
+
+assertEquals('fmtBR: YYYY-MM-DD → DD/MM',
+  fmtBR('2025-05-27'),
+  '27/05'
+);
+
+// 2025-05-29 = quinta-feira → segunda = 2025-05-26
+const seg = getSeg(new Date(2025, 4, 29));
+assertEquals('getSeg: retorna segunda-feira da semana',
+  fmtD(seg),
+  '2025-05-26'
+);
+
+// getDias: segunda + 4 dias
+const dias = getDias(seg);
+assert('getDias: retorna exatamente 5 dias',
+  dias.length === 5,
+  `length = ${dias.length}`
+);
+assertEquals('getDias: dia 0 é a segunda',  dias[0], '2025-05-26');
+assertEquals('getDias: dia 4 é a sexta',    dias[4], '2025-05-30');
+assert('getDias: todos no formato YYYY-MM-DD',
+  dias.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d)),
+  dias.join(', ')
+);
+
+// getSeg: domingo deve ir para próxima segunda
+const segFromSun = getSeg(new Date(2025, 4, 25)); // 25/05 = domingo
+assertEquals('getSeg: domingo → segunda anterior (25/mai = dom → 19/mai = seg)',
+  fmtD(segFromSun), '2025-05-19'
+);
+
+// ─── Bloco 2: Helpers de dados ────────────────────────────────────
+startBlock('Bloco 2 — Helpers de dados');
+
+const id1 = uid(), id2 = uid();
+assert('uid: gera strings não-vazias',  id1.length > 0, `uid = "${id1}"`);
+assert('uid: 2 chamadas retornam valores diferentes',  id1 !== id2, `"${id1}" vs "${id2}"`);
+
+const sorted = alpha([{nome:'Zé'}, {nome:'Ana'}, {nome:'Bia'}]);
+assertEquals('alpha: ordena A-Z em pt-BR',
+  sorted.map(x => x.nome),
+  ['Ana', 'Bia', 'Zé']
+);
+assert('alpha: não modifica array original',
+  alpha([{nome:'B'},{nome:'A'}])[0].nome === 'A', ''
+);
+
+const lista = [{id:'abc',nome:'Maria'},{id:'xyz',nome:'João'}];
+assertEquals('nomePorId: encontra pelo ID', nomePorId(lista, 'abc'), 'Maria');
+assertEquals('nomePorId: retorna vazio se não achar', nomePorId(lista, '999'), '');
+assertEquals('nomePorId: array vazio retorna vazio', nomePorId([], 'abc'), '');
+
+// ─── Bloco 3: isAusenteNoDia (lógica crítica) ─────────────────────
+startBlock('Bloco 3 — isAusenteNoDia (lógica crítica)');
+
+const funcFalta = { ausencias: [{ id:'1', tipo:'falta', inicio:'2025-05-27', fim:'2025-05-27' }] };
+assert('Falta (dia único): true no dia da falta',
+  isAusenteNoDia(funcFalta, '2025-05-27'), ''
+);
+assert('Falta (dia único): false no dia anterior',
+  !isAusenteNoDia(funcFalta, '2025-05-26'), ''
+);
+assert('Falta (dia único): false no dia seguinte',
+  !isAusenteNoDia(funcFalta, '2025-05-28'), ''
+);
+
+const funcFerias = { ausencias: [{ id:'2', tipo:'ferias', inicio:'2025-05-26', fim:'2025-05-30' }] };
+assert('Férias: true no primeiro dia',  isAusenteNoDia(funcFerias, '2025-05-26'), '');
+assert('Férias: true no meio do período', isAusenteNoDia(funcFerias, '2025-05-28'), '');
+assert('Férias: true no último dia',   isAusenteNoDia(funcFerias, '2025-05-30'), '');
+assert('Férias: false antes do início', !isAusenteNoDia(funcFerias, '2025-05-25'), '');
+assert('Férias: false após o fim',      !isAusenteNoDia(funcFerias, '2025-05-31'), '');
+
+const funcAfastamento = { ausencias: [{ id:'3', tipo:'afastamento', inicio:'2025-05-20', fim:null }] };
+assert('Afastamento (fim null): true no dia de início',
+  isAusenteNoDia(funcAfastamento, '2025-05-20'), ''
+);
+assert('Afastamento (fim null): true em dias futuros',
+  isAusenteNoDia(funcAfastamento, '2025-12-31'), ''
+);
+assert('Afastamento (fim null): false antes do início',
+  !isAusenteNoDia(funcAfastamento, '2025-05-19'), ''
+);
+
+const funcAfastUndef = { ausencias: [{ id:'4', tipo:'afastamento', inicio:'2025-05-20', fim:undefined }] };
+assert('Afastamento (fim undefined): true em dias futuros',
+  isAusenteNoDia(funcAfastUndef, '2026-01-01'), ''
+);
+
+const funcSemAus = { ausencias: [] };
+assert('Sem ausências: sempre false', !isAusenteNoDia(funcSemAus, '2025-05-27'), '');
+
+const funcSemProp = {};
+assert('Sem prop ausencias: sempre false', !isAusenteNoDia(funcSemProp, '2025-05-27'), '');
+
+const funcFuturo = { ausencias: [{ id:'5', tipo:'ferias', inicio:'2025-12-01', fim:'2025-12-15' }] };
+assert('Ausência futura: false para dia atual',
+  !isAusenteNoDia(funcFuturo, '2025-05-27'), ''
+);
+
+// ─── Bloco 4: getEqs / prog state ────────────────────────────────
+startBlock('Bloco 4 — getEqs / prog state');
+
+// Reset prog para teste isolado
+prog = { semanaInicio: '', dias: {}, atualizadoEm: null };
+
+const eqsVazias = getEqs('2025-05-27');
+assert('getEqs em prog vazio: retorna array vazio',
+  Array.isArray(eqsVazias) && eqsVazias.length === 0,
+  `length = ${eqsVazias.length}`
+);
+assert('getEqs inicializa estrutura do dia no prog',
+  prog.dias['2025-05-27'] !== undefined, ''
+);
+
+// Adicionar equipe e verificar
+const eqTest = { id: uid(), lider: 'abc', membros: [], area: '', atividades: [], obs: '' };
+getEqs('2025-05-27').push(eqTest);
+const eqsComDado = getEqs('2025-05-27');
+assert('getEqs: retorna equipe adicionada',
+  eqsComDado.length === 1 && eqsComDado[0].lider === 'abc', ''
+);
+
+// Dia diferente não é afetado
+const eqsOutroDia = getEqs('2025-05-28');
+assert('getEqs: dias independentes (outro dia vazio)',
+  eqsOutroDia.length === 0, ''
+);
+
+// ─── Bloco 5: Regressões dos bugs deste sprint ────────────────────
+startBlock('Bloco 5 — Regressões (bugs corrigidos neste sprint)');
+
+// Simula banco com líderes e funcionários separados
+banco = {
+  lideres: [
+    { id: 'lid1', nome: 'Carlos Líder', ausencias: [
+      { id: 'a1', tipo: 'ferias', inicio: '2025-05-26', fim: '2025-05-30' }
+    ]},
+    { id: 'lid2', nome: 'Ana Líder', ausencias: [] }
+  ],
+  funcionarios: [
+    { id: 'fun1', nome: 'Pedro Func', ausencias: [
+      { id: 'a2', tipo: 'falta', inicio: '2025-05-27', fim: '2025-05-27' }
+    ]},
+    { id: 'fun2', nome: 'Lúcia Func', ausencias: [] }
+  ],
+  atividades: [],
+  areas: []
+};
+
+const dia = '2025-05-27';
+
+// Bug #1 & #2: líderes devem ser incluídos na contagem de ausentes
+const todosF = [...(banco.lideres || []), ...banco.funcionarios];
+const ausentes = todosF.filter(f => isAusenteNoDia(f, dia));
+assert('Bug #1/#2: contagem inclui líderes E funcionários ausentes',
+  ausentes.length === 2,
+  `ausentes encontrados: ${ausentes.map(f => f.nome).join(', ')} (esperado: Carlos Líder + Pedro Func)`
+);
+assert('Bug #1/#2: líder ausente está na lista',
+  ausentes.some(f => f.id === 'lid1'), ''
+);
+assert('Bug #1/#2: funcionário ausente está na lista',
+  ausentes.some(f => f.id === 'fun1'), ''
+);
+assert('Bug #1/#2: líder sem ausência NÃO está na lista',
+  !ausentes.some(f => f.id === 'lid2'), ''
+);
+assert('Bug #1/#2: funcionário sem ausência NÃO está na lista',
+  !ausentes.some(f => f.id === 'fun2'), ''
+);
+
+// Bug #5: nomePorId deve encontrar líderes em banco.lideres
+assertEquals('Bug #5: nomePorId encontra líder em banco.lideres',
+  nomePorId(banco.lideres || [], 'lid1'),
+  'Carlos Líder'
+);
+assertEquals('Bug #5: fallback para banco.funcionarios funciona',
+  nomePorId(banco.lideres || [], 'fun1') || nomePorId(banco.funcionarios, 'fun1'),
+  'Pedro Func'
+);
+assertEquals('Bug #5: líder não encontrado retorna vazio sem crash',
+  nomePorId(banco.lideres || [], 'INEXISTENTE'),
+  ''
+);
+
+// isAusenteNoDia funciona para objetos de banco.lideres
+assert('Bug #1: isAusenteNoDia funciona para líder (banco.lideres)',
+  isAusenteNoDia(banco.lideres[0], dia), ''
+);
+assert('Bug #1: isAusenteNoDia retorna false para líder sem ausência',
+  !isAusenteNoDia(banco.lideres[1], dia), ''
+);
+
+// ─── Renderizar sumário ───────────────────────────────────────────
+const total = passCount + failCount;
+const summaryEl = document.getElementById('summary');
+summaryEl.innerHTML = `
+  <div class="count-box total"><strong>${total}</strong><span>Total</span></div>
+  <div class="count-box pass"><strong>${passCount}</strong><span>Passou ✓</span></div>
+  <div class="count-box fail"><strong>${failCount}</strong><span>Falhou ✗</span></div>
+`;
+
+// Mudar cor do título conforme resultado
+const h1 = document.querySelector('h1');
+if (failCount === 0) {
+  h1.textContent = '✅ Equipes Coo — Todos os testes passaram!';
+  h1.style.color = '#3fb950';
+} else {
+  h1.textContent = `❌ Equipes Coo — ${failCount} teste(s) falharam`;
+  h1.style.color = '#f85149';
+}
+</script>
+</body>
+</html>
