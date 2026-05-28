@@ -241,6 +241,12 @@ function exportarSemanaPDF() {
   if (!win) { toast('⚠️ Permita popups para exportar PDF'); return; }
   win.document.write(htmlPDF);
   win.document.close();
+
+  // Aviso mobile: browsers móveis ignoram @page size landscape
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile) {
+    setTimeout(() => toast('📄 No celular: selecione "Paisagem" na impressão'), 600);
+  }
 }
 
 function openListaModal(tipo) {

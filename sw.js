@@ -1,4 +1,4 @@
-const CACHE  = 'equipes-coo-v19';
+const CACHE  = 'equipes-coo-v20';
 const ASSETS = [
   './',
   './index.html',
