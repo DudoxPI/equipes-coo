@@ -12,7 +12,7 @@ function dataBR() {
 function ausenciasDoDia() {
   const ORDEM = ['ferias', 'viagem', 'folga', 'dayoff', 'atestado', 'falta', 'afastamento'];
   const grupos = {};
-  banco.funcionarios
+  [...(banco.lideres || []), ...banco.funcionarios]
     .filter(f => isAusenteNoDia(f, diaAtual))
     .forEach(f => {
       const aus = (f.ausencias || []).find(a => {
@@ -31,7 +31,7 @@ function buildListaEquipes() {
   if (!eqs.length) return 'Nenhuma equipe programada para este dia.';
   let txt = `📋 *Distribuição do dia ${dataBR()}*\n\n`;
   eqs.forEach(eq => {
-    const lider = nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
+    const lider = nomePorId(banco.lideres || [], eq.lider) || nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
     const membs = (eq.membros || []).map(mid => nomePorId(banco.funcionarios, mid)).filter(Boolean);
     txt += `👤 *${lider}*\n`;
     membs.forEach(mb => { txt += `  • ${mb}\n`; });
@@ -46,7 +46,7 @@ function buildListaCoordenacao() {
   let temConteudo = false;
 
   eqs.forEach(eq => {
-    const lider = nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
+    const lider = nomePorId(banco.lideres || [], eq.lider) || nomePorId(banco.funcionarios, eq.lider) || 'Sem líder';
     const area  = nomePorId(banco.areas, eq.area);
     const ativs = (eq.atividades || []).map(aid => nomePorId(banco.atividades, aid)).filter(Boolean);
     const membs = (eq.membros    || []).map(mid => nomePorId(banco.funcionarios, mid)).filter(Boolean);
