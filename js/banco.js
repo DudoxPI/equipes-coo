@@ -218,4 +218,6 @@ async function init() {
   renderBanco();
   renderUltimaAtualizacao();
   syncDot('ok');
+  // Segundo uso em diante: sync em background sem bloquear a UI
+  if (temDadosLocal()) sincronizarNuvem();
 }

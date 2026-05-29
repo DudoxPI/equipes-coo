@@ -158,6 +158,29 @@ async function forcarDownload() {
   else if (typeof renderBanco  === 'function') renderBanco();
 }
 
+// Stale-while-revalidate: exibe local imediatamente, busca nuvem em background
+// Só atualiza se a nuvem for mais recente que o local (compara timestamps ISO)
+async function sincronizarNuvem() {
+  try {
+    syncDot('loading');
+    const [b, p] = await Promise.all([lerBin('banco.json'), lerBin('prog.json')]);
+    const tsNuvem = p?.atualizadoEm || '';
+    const tsLocal = prog.atualizadoEm || '';
+    if (tsNuvem > tsLocal) {
+      banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
+      prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
+      salvarLocal();
+      renderUltimaAtualizacao();
+      if      (typeof renderTudo  === 'function') renderTudo();
+      else if (typeof renderBanco === 'function') renderBanco();
+      toast('✓ Dados atualizados!');
+    }
+    syncDot('ok');
+  } catch (e) {
+    syncDot('err'); // silent — app continua com local
+  }
+}
+
 // Salva local + envia para nuvem (sem await — fire and forget)
 function salvar() {
   salvarLocal();
