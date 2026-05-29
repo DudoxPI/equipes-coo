@@ -22,6 +22,11 @@
 
 **⚠️ Qualquer mudança em `banco` ou `prog` afeta AMBAS as telas + o export.**
 
+## Planos
+
+Todos os planos deste projeto ficam em `.claude/plans/` (dentro do projeto).
+Planos concluídos devem ser deletados após a implementação.
+
 ## Regra obrigatória antes de toda implementação
 
 Antes de editar qualquer arquivo, liste explicitamente:
