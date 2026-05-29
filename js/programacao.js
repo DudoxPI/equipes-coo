@@ -372,17 +372,26 @@ function renderChipsMembros() {
     document.getElementById('fMembrosChips').innerHTML = '<span style="font-size:12px;color:var(--text-muted)">Nenhum funcionário disponível</span>';
     return;
   }
-  document.getElementById('fMembrosChips').innerHTML =
-    lista.map(f => {
-      const ocupado   = usados.has(f.id);
-      const ausente   = isAusenteNoDia(f, diaAtual);
-      const bloqueado = ocupado || ausente;
-      const sel       = formMembros.includes(f.id);
-      const cls       = [sel ? 'sel-membro' : '', bloqueado && !sel ? 'disabled' : ''].filter(Boolean).join(' ');
-      const hint      = ocupado ? `<span class="fchip-hint">(alocado)</span>`
-                      : ausente ? `<span class="fchip-hint">(ausente)</span>` : '';
-      return `<span class="fchip ${cls}" onclick="toggleFormMembro('${f.id}')">${f.nome}${hint}</span>`;
-    }).join('');
+
+  // Agrupa por letra inicial com separadores
+  let html = '';
+  let letraAtual = '';
+  for (const f of lista) {
+    const letra = f.nome.trim().charAt(0).toUpperCase();
+    if (letra !== letraAtual) {
+      letraAtual = letra;
+      html += `<div class="fchips-sep">${letra}</div>`;
+    }
+    const ocupado   = usados.has(f.id);
+    const ausente   = isAusenteNoDia(f, diaAtual);
+    const bloqueado = ocupado || ausente;
+    const sel       = formMembros.includes(f.id);
+    const cls       = [sel ? 'sel-membro' : '', bloqueado && !sel ? 'disabled' : ''].filter(Boolean).join(' ');
+    const hint      = ocupado ? `<span class="fchip-hint">(alocado)</span>`
+                    : ausente ? `<span class="fchip-hint">(ausente)</span>` : '';
+    html += `<span class="fchip ${cls}" onclick="toggleFormMembro('${f.id}')">${f.nome}${hint}</span>`;
+  }
+  document.getElementById('fMembrosChips').innerHTML = html;
 }
 
 // ── Toggles ──

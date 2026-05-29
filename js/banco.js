@@ -141,26 +141,46 @@ function renderBanco() {
     return `${lbl} ${fmtBR(a.inicio)} – ${fmtBR(a.fim)}`;
   }
 
-  // helper: renderiza lista de pessoas com ausências (funcionários e líderes)
-  function renderPessoas(lista, delFn, source) {
-    const ordenados = [
-      ...alpha(lista).filter(f => (f.ausencias || []).length > 0),
-      ...alpha(lista).filter(f => !(f.ausencias || []).length),
-    ];
-    return ordenados.map(f => {
-      const aus = f.ausencias || [];
-      const ausBadges = aus.map(a =>
-        `<span class="aus-badge aus-${a.tipo === 'dayoff' ? 'folga' : a.tipo}" onclick="event.stopPropagation();delAusencia('${f.id}','${a.id}','${source}')" title="Clique para remover">${ausLabel(a)} ✕</span>`
-      ).join('');
-      return `<div class="irow irow-func">
-        <div class="func-left">
-          <span class="iname">${f.nome}</span>
-          ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
-          <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}','${source}')">+ Ausência</button>
-        </div>
-        <button class="idel" onclick="${delFn}('${f.id}')">✕</button>
-      </div>`;
-    }).join('');
+  // helper: renderiza uma linha de pessoa
+  function renderRow(f, delFn, source) {
+    const aus = f.ausencias || [];
+    const ausBadges = aus.map(a =>
+      `<span class="aus-badge aus-${a.tipo === 'dayoff' ? 'folga' : a.tipo}" onclick="event.stopPropagation();delAusencia('${f.id}','${a.id}','${source}')" title="Clique para remover">${ausLabel(a)} ✕</span>`
+    ).join('');
+    return `<div class="irow irow-func">
+      <div class="func-left">
+        <span class="iname">${f.nome}</span>
+        ${aus.length ? `<div class="aus-lista">${ausBadges}</div>` : ''}
+        <button class="aus-add-btn" onclick="abrirModalAusencia('${f.id}','${source}')">+ Ausência</button>
+      </div>
+      <button class="idel" onclick="${delFn}('${f.id}')">✕</button>
+    </div>`;
+  }
+
+  // helper: renderiza lista de pessoas (com ou sem separadores alfabéticos)
+  function renderPessoas(lista, delFn, source, separadores = false) {
+    if (!separadores) {
+      // Líderes: ausentes primeiro, depois restante, ambos A-Z
+      const ordenados = [
+        ...alpha(lista).filter(f => (f.ausencias || []).length > 0),
+        ...alpha(lista).filter(f => !(f.ausencias || []).length),
+      ];
+      return ordenados.map(f => renderRow(f, delFn, source)).join('');
+    }
+
+    // Funcionários: A-Z com separadores de letra
+    const ordenados = alpha(lista);
+    let html = '';
+    let letraAtual = '';
+    for (const f of ordenados) {
+      const letra = f.nome.trim().charAt(0).toUpperCase();
+      if (letra !== letraAtual) {
+        letraAtual = letra;
+        html += `<div class="alpha-sep">${letra}</div>`;
+      }
+      html += renderRow(f, delFn, source);
+    }
+    return html;
   }
 
   // Líderes
@@ -170,11 +190,11 @@ function renderBanco() {
     ? `<div class="empty">${svgUser}Nenhum líder</div>`
     : renderPessoas(lideres, 'delLider', 'lideres');
 
-  // Funcionários
+  // Funcionários (com separadores alfabéticos)
   const lf = document.getElementById('lFunc');
   if (lf) lf.innerHTML = !banco.funcionarios.length
     ? `<div class="empty">${svgUser}Nenhum funcionário</div>`
-    : renderPessoas(banco.funcionarios, 'delFunc', 'funcionarios');
+    : renderPessoas(banco.funcionarios, 'delFunc', 'funcionarios', true);
 
   const la = document.getElementById('lAtiv');
   if (la) la.innerHTML = !banco.atividades.length

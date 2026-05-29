@@ -511,3 +511,56 @@
 .aus-np-atestado    { border-color: rgba(184,164,255,.35); color: #b8a4ff; background: rgba(184,164,255,.07); }
 .aus-np-falta       { border-color: rgba(240,96,128,.35);  color: #f06080; background: rgba(240,96,128,.07);  }
 .aus-np-afastamento { border-color: rgba(255,122,122,.35); color: #ff7a7a; background: rgba(255,122,122,.07); }
+
+/* ── SEPARADOR ALFABÉTICO (Funcionários — banco e stepper) ── */
+.alpha-sep {
+  font-size: 11px; font-weight: 800; color: var(--text-muted);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 12px 2px 5px; margin-top: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+/* No modal stepper (fchips flex wrap) */
+.fchips-sep {
+  width: 100%; font-size: 11px; font-weight: 800;
+  color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 8px 0 3px; border-bottom: 1px solid var(--border);
+  margin: 4px 0 1px;
+}
+
+/* ── MOBILE — fontes maiores para leitura ── */
+@media (max-width: 600px) {
+  /* Chips do stepper */
+  .fchip { font-size: 15px; padding: 9px 15px; }
+  .fchip-hint { font-size: 12px; }
+
+  /* Cards de equipe na tela principal */
+  .eq-lider  { font-size: 18px; }
+  .eq-chip   { font-size: 13px; padding: 4px 12px; }
+  .eq-m      { font-size: 14px; padding: 4px 12px; }
+  .eq-obs    { font-size: 13px; }
+  .eql-txt   { font-size: 15px; }
+
+  /* Banco — lista de pessoas */
+  .iname     { font-size: 16px; }
+  .irow      { padding: 14px 14px; min-height: 52px; }
+  .aus-badge { font-size: .82rem; padding: 4px 10px; }
+  .aus-add-btn { font-size: .85rem; padding: 5px 12px; }
+  .alpha-sep { font-size: 12px; padding: 14px 2px 6px; }
+
+  /* Ausências — card da tela principal */
+  .aus-name-pill { font-size: 14px; padding: 6px 12px; }
+  .aus-card-title { font-size: 13px; }
+  .aus-card-count { font-size: 13px; }
+
+  /* Disponíveis */
+  .disp-chip       { font-size: 13px; padding: 4px 11px; }
+  .disp-card-title { font-size: 13px; }
+  .disp-card-count { font-size: 13px; }
+
+  /* Tabs de dia */
+  .dtab .dn { font-size: 12px; }
+  .dtab .dd { font-size: 22px; }
+  .dtab .dc { font-size: 14px; }
+  .dtab .da { font-size: 12px; }
+}
