@@ -80,10 +80,6 @@ function toast(m) {
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove('show'), 2400);
 }
-function syncDot(s) {
-  const d = document.getElementById('syncDot');
-  if (d) d.className = 'sync-dot ' + s;
-}
 
 // ── API helpers ──
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
@@ -110,39 +106,27 @@ async function salvarNuvem(b, p) {
 
 // ── Enviar / Carregar nuvem ──
 async function enviarNuvem() {
-  syncDot('loading');
   try {
     prog.atualizadoEm = new Date().toISOString();
     const ok = await salvarNuvem(banco, prog);
-    syncDot(ok ? 'ok' : 'err');
     if (ok) renderUltimaAtualizacao();
     else toast('Erro ao enviar');
   } catch (e) {
-    syncDot('err');
     toast('Sem conexão');
   }
 }
 async function carregarNuvem() {
-  syncDot('loading');
   setLoad(true);
   try {
     const { banco: b, prog: p } = await lerNuvem();
     banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
     prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
-    syncDot('ok');
-    toast('✓ Dados carregados!');
     renderUltimaAtualizacao();
   } catch (e) {
-    syncDot('err');
     toast('Erro ao carregar');
   } finally {
     setLoad(false);
   }
-}
-async function forcarDownload() {
-  await carregarNuvem();
-  if      (typeof renderTudo   === 'function') renderTudo();
-  else if (typeof renderBanco  === 'function') renderBanco();
 }
 
 // Envia para o servidor (sem await — fire and forget)
