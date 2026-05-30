@@ -434,14 +434,8 @@ function renderTudo() {
 }
 
 async function init() {
-  carregarLocal();
-  if (!temDadosLocal()) {
-    await carregarNuvem();
-  }
+  await carregarNuvem();
   initSemana();
   renderSemana();
   renderUltimaAtualizacao();
-  syncDot('ok');
-  // Segundo uso em diante: sync em background sem bloquear a UI
-  if (temDadosLocal()) sincronizarNuvem();
 }

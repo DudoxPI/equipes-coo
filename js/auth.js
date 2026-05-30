@@ -45,8 +45,6 @@ function verificarAuth() {
 function logout() {
   localStorage.removeItem(AUTH_KEY);
   localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem('c_banco');
-  localStorage.removeItem('c_prog');
   const ov = document.getElementById('authOv');
   if (ov) ov.style.display = '';
 }

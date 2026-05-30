@@ -213,11 +213,7 @@ function renderBanco() {
 
 // ── Init (banco.html) ──
 async function init() {
-  carregarLocal();
-  if (!temDadosLocal()) await carregarNuvem();
+  await carregarNuvem();
   renderBanco();
   renderUltimaAtualizacao();
-  syncDot('ok');
-  // Segundo uso em diante: sync em background sem bloquear a UI
-  if (temDadosLocal()) sincronizarNuvem();
 }

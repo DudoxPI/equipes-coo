@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════
-   SYNC — estado, localStorage e Gist
+   SYNC — estado global e API
    ═══════════════════════════════════════ */
 
 // ── Estado global ──
@@ -85,23 +85,6 @@ function syncDot(s) {
   if (d) d.className = 'sync-dot ' + s;
 }
 
-// ── LocalStorage ──
-function salvarLocal() {
-  localStorage.setItem('c_banco', JSON.stringify(banco));
-  localStorage.setItem('c_prog',  JSON.stringify(prog));
-}
-function carregarLocal() {
-  try {
-    const b = localStorage.getItem('c_banco');
-    const p = localStorage.getItem('c_prog');
-    if (b) banco = JSON.parse(b);
-    if (p) prog  = JSON.parse(p);
-  } catch (e) {}
-}
-function temDadosLocal() {
-  return !!localStorage.getItem('c_banco');
-}
-
 // ── API helpers ──
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 function authHeaders() {
@@ -130,7 +113,6 @@ async function enviarNuvem() {
   syncDot('loading');
   try {
     prog.atualizadoEm = new Date().toISOString();
-    salvarLocal();
     const ok = await salvarNuvem(banco, prog);
     syncDot(ok ? 'ok' : 'err');
     if (ok) renderUltimaAtualizacao();
@@ -147,7 +129,6 @@ async function carregarNuvem() {
     const { banco: b, prog: p } = await lerNuvem();
     banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
     prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
-    salvarLocal();
     syncDot('ok');
     toast('✓ Dados carregados!');
     renderUltimaAtualizacao();
@@ -164,32 +145,8 @@ async function forcarDownload() {
   else if (typeof renderBanco  === 'function') renderBanco();
 }
 
-// Stale-while-revalidate: exibe local imediatamente, busca nuvem em background
-// Só atualiza se a nuvem for mais recente que o local (compara timestamps ISO)
-async function sincronizarNuvem() {
-  try {
-    syncDot('loading');
-    const { banco: b, prog: p } = await lerNuvem();
-    const tsNuvem = p?.atualizadoEm || '';
-    const tsLocal = prog.atualizadoEm || '';
-    if (tsNuvem > tsLocal) {
-      banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
-      prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
-      salvarLocal();
-      renderUltimaAtualizacao();
-      if      (typeof renderTudo  === 'function') renderTudo();
-      else if (typeof renderBanco === 'function') renderBanco();
-      toast('✓ Dados atualizados!');
-    }
-    syncDot('ok');
-  } catch (e) {
-    syncDot('err'); // silent — app continua com local
-  }
-}
-
-// Salva local + envia para nuvem (sem await — fire and forget)
+// Envia para o servidor (sem await — fire and forget)
 function salvar() {
-  salvarLocal();
   enviarNuvem();
 }
 

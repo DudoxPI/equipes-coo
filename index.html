@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Equipes Coo"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="ico_ep_coo.png"/>
 <title>Equipes Coo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
@@ -153,10 +151,6 @@ function navTo(pg, btn) {
   document.getElementById('page-' + pg).classList.add('active');
   btn.classList.add('active');
   renderDia();
-}
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 }
 
 verificarAuth();
