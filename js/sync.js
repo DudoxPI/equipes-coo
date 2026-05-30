@@ -102,20 +102,26 @@ function temDadosLocal() {
   return !!localStorage.getItem('c_banco');
 }
 
-// ── Gist ──
-async function lerBin(arquivo) {
-  const r = await fetch(BASE_GH + GIST_ID, {
-    headers: { 'Authorization': 'Bearer ' + GH_TOKEN }
-  });
-  if (!r.ok) throw new Error('Gist fetch failed');
-  return JSON.parse((await r.json()).files[arquivo].content);
+// ── API helpers ──
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+function authHeaders() {
+  return { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' };
 }
-async function salvarBin(arquivo, data) {
-  const r = await fetch(BASE_GH + GIST_ID, {
+
+// ── API ──
+async function lerNuvem() {
+  const r = await fetch(API_BASE + '/data', { headers: authHeaders() });
+  if (r.status === 401) { logout(); throw new Error('Não autorizado'); }
+  if (!r.ok) throw new Error('Falha ao buscar dados');
+  return r.json(); // { banco, prog }
+}
+async function salvarNuvem(b, p) {
+  const r = await fetch(API_BASE + '/data', {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + GH_TOKEN, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ files: { [arquivo]: { content: JSON.stringify(data) } } })
+    headers: authHeaders(),
+    body: JSON.stringify({ banco: b, prog: p }),
   });
+  if (r.status === 401) { logout(); return false; }
   return r.ok;
 }
 
@@ -125,7 +131,7 @@ async function enviarNuvem() {
   try {
     prog.atualizadoEm = new Date().toISOString();
     salvarLocal();
-    const ok = await salvarBin('banco.json', banco) && await salvarBin('prog.json', prog);
+    const ok = await salvarNuvem(banco, prog);
     syncDot(ok ? 'ok' : 'err');
     if (ok) renderUltimaAtualizacao();
     else toast('Erro ao enviar');
@@ -138,7 +144,7 @@ async function carregarNuvem() {
   syncDot('loading');
   setLoad(true);
   try {
-    const [b, p] = await Promise.all([lerBin('banco.json'), lerBin('prog.json')]);
+    const { banco: b, prog: p } = await lerNuvem();
     banco = b || { lideres: [], funcionarios: [], atividades: [], areas: [] };
     prog  = p || { semanaInicio: '', dias: {}, atualizadoEm: null };
     salvarLocal();
@@ -163,7 +169,7 @@ async function forcarDownload() {
 async function sincronizarNuvem() {
   try {
     syncDot('loading');
-    const [b, p] = await Promise.all([lerBin('banco.json'), lerBin('prog.json')]);
+    const { banco: b, prog: p } = await lerNuvem();
     const tsNuvem = p?.atualizadoEm || '';
     const tsLocal = prog.atualizadoEm || '';
     if (tsNuvem > tsLocal) {
